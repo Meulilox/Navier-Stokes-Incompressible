@@ -195,7 +195,7 @@ def __main__():
         # k1 correspond à -GPx + LU - NLU
         # k2 correspond à -GPx + LU' - NLU' où LU' et NLU' sont les termes linéaires et non-linéaires pour les champs U + dt*U_k1, V + dt*V_k1
 
-        U_k1 = -GPx + LU - NLU
+        '''U_k1 = -GPx + LU - NLU
         V_k1 = -GPy + LV - NLV
 
         LUp, LVp = getLinear(U + dt*U_k1, V + dt*V_k1) # Laplacien de (U, V)
@@ -205,10 +205,33 @@ def __main__():
         V_k2 = -GPy + LVp - NLVp
 
         Ustar = U + dt/2 * (U_k1 + U_k2)
-        Vstar = V + dt/2 * (V_k1 + V_k2)
+        Vstar = V + dt/2 * (V_k1 + V_k2)'''
 
-        # Calculs de u* et v* (RK4)
-        # TODO (bon courage ! ;) )
+        # Calculs de u* et v* (RK4) (calculs plus long)
+
+        U_k1 = -GPx + LU - NLU
+        V_k1 = -GPy + LV - NLV
+
+        LUk1, LVk1 = getLinear(U + dt/2*U_k1, V + dt/2*V_k1)
+        NLUk1 , NLVk1 = getNonLinear(U + dt/2*U_k1, V + dt/2*V_k1)
+
+        U_k2 = -GPx + LUk1 + NLUk1
+        V_k2 = -GPy + LVk1 + NLVk1
+
+        LUk2, LVk2 = getLinear(U + dt/2*U_k2, V + dt/2*V_k2)
+        NLUk2 , NLVk2 = getNonLinear(U + dt/2*U_k2, V + dt/2*V_k2)
+
+        U_k3 = -GPx + LUk2 + NLUk2
+        V_k3 = -GPy + LVk2 + NLVk2
+
+        LUk3, LVk3 = getLinear(U + dt/2*U_k3, V + dt/2*V_k3)
+        NLUk3 , NLVk3 = getNonLinear(U + dt/2*U_k3, V + dt/2*V_k3)
+
+        U_k4 = -GPx + LUk3 + NLUk3
+        V_k4 = -GPy + LVk3 + NLVk3
+
+        Ustar = U + dt * (U_k1/6 + U_k2/3 + U_k3/3 + U_k4/6)
+        Vstar = V + dt * (V_k1/6 + V_k2/3 + V_k3/3 + V_k4/6)
 
         # Calcul de la divergence du champ (u*, v*)
         Div_UVstar = getDiv(Ustar, Vstar) / dt
