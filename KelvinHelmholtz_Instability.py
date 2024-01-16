@@ -1,9 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from math import *
 from Laplacien import ResolP
-from Laplacien import buildMatrix
-from matplotlib import cm
 
 # Paramètres discrétisation
 
