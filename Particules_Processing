@@ -1,0 +1,124 @@
+String[] Udata;
+String[] Vdata;
+
+int Nx; // Nx POINTS EN X
+int Ny; // Ny POINTS EN Y
+
+float[][] U; // U VALUES (COMP X DU VECTEUR VITESSE)
+float[][] V; // V VALUES (COMP Y DU VECTEUR VITESSE)
+
+float ratio = 100;
+
+ArrayList<Particle> particles;
+int Np = 2000;
+
+void resetParticles() {
+   for (Particle p : particles) {
+       p.pos.x = random(0, width);
+       p.pos.y = random(0, height);
+   }
+}
+
+// POUR RECUPERER LE MAX D'UNE MATRICE
+float getMax(float[][] U) {
+   float res = U[0][0];
+   for (int i = 0; i < Nx; i++) {
+      for (int j = 0; j < Ny; j++) {
+         if(U[i][j] >= res) {
+            res = U[i][j]; 
+         }
+      }
+   }
+   return res;
+}
+
+void setup() {
+  size(800, 800);
+  colorMode(HSB);
+  
+  // PARTICULES DE FLUIDE
+  particles = new ArrayList<Particle>();
+  for(int i = 0; i < Np; i++) {
+     float x = random(0, width);
+     float y = random(0, height);
+     this.particles.add(new Particle(x, y));
+  }
+  
+  // ON RECUP LES DONNEES
+  Udata = loadStrings("../Data/Ufield.txt");
+  Vdata = loadStrings("../Data/Vfield.txt");
+  
+  // TAILLES N ET M DE LA DISCRETISATION
+  Nx = Udata.length;
+  Ny = split(Udata[0], " ").length;  
+  
+  // ON TRAITE U ET V
+  // INITIALISATION
+  U = new float[Nx][Ny];
+  V = new float[Nx][Ny];
+  
+  // BOUCLE SUR LES DONNEES
+  for (int i = 0; i < Nx; i++) {
+     
+    // ON RECUPERE CHAQUE LIGNE DE CHAQUE FICHIER
+    String[] datU = split(Udata[i], " ");
+    String[] datV = split(Vdata[i], " ");
+    
+    // ON REMPLIT LES TABLEAUX NUMERIQUES AVEC CES DONNEES
+    for (int j = 0; j < Ny; j++) {
+       U[i][j] = float(datU[j]);
+       V[i][j] = float(datV[j]);
+    }
+  }
+}
+
+void draw() {
+  
+  // AFFICHAGE
+  background(0);
+  stroke(255);
+  strokeWeight(5);
+  noFill();
+  
+  // ON MET LE REPERE EN BAS A GAUCHE
+  translate(0, height);
+  scale(1, -1);
+  
+  // POUR AFFICHER LE CHAMP DE VECTEUR
+  /*for (int i = 0; i < Nx; i++) {
+     for (int j = 0; j < Ny; j++) {
+        float x1 = (i + 0.5) * width / Nx;
+        float y1 = (j + 0.5) * height / Ny;
+        float x2 = x1 + ratio * U[i][j];
+        float y2 = y1 + ratio * V[i][j];
+        line(x1, y1, x2, y2); 
+        stroke(255, 0, 0);
+        point(x2, y2);
+        stroke(255);
+     }
+  }  */
+  
+  // BOUCLE SUR TOUTES LES PARTICULES DE FLUIDE
+  for (Particle p : particles) {
+      p.update(U, V, Nx, Ny);
+      
+      float bright = map(p.getRVitVal(), 0, sqrt(pow(getMax(U), 2) + pow(getMax(V), 2)), 0, 300);
+      stroke(255, 255, bright);
+      p.show();
+  }
+
+}
+
+void keyPressed() {
+  if (key == CODED) {
+    if (keyCode == UP) {
+       ratio *= 2;
+    } else if (keyCode == DOWN) {
+       ratio /= 2; 
+    }
+  }
+  
+  if(key == 'r') {
+     resetParticles(); 
+  }
+}
