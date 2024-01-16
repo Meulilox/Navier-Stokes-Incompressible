@@ -1,0 +1,54 @@
+class Particle {
+ 
+  // ATTRIBUTS
+  PVector pos;
+  PVector rvit;
+  PVector vit;
+  
+  
+  // CONSTRUCTEUR
+  Particle (float x, float y) {
+    this.pos = new PVector(x, y);
+    this.vit = new PVector(0, 0);  
+    this.rvit = new PVector(0, 0);
+  }
+  
+  // GETTERS
+  PVector getPos() { return pos; }
+  PVector getRVit() { return rvit; }
+  PVector getVit() { return vit; }
+  float getRVitVal() { return sqrt(pow(rvit.x, 2) + pow(rvit.y, 2));  }
+  float getVitVal() { return sqrt(pow(vit.x, 2) + pow(vit.y, 2)); }
+  
+  // FONCTION UPDATE DE LA PARTICULE
+  void update(float[][] U, float[][] V, int Nx, int Ny) {
+    
+    // ON RECUPERE LA VALEUR DU VECTEUR VITESSE LE PLUS PROCHE DE NOTRE POSITION
+    int x_index = floor(map(pos.x, 0, width, 0, Nx-1));
+    int y_index = floor(map(pos.y, 0, height, 0, Ny-1));
+    
+    rvit.x = U[x_index][y_index];
+    rvit.y = V[x_index][y_index];
+    
+    // ON MET A JOUR LA VITESSE ET LA POSITION DE LA PARTICULE
+    vit.x = 4 * rvit.x;
+    vit.y = 4 * rvit.y;
+    
+    pos.x += vit.x;
+    pos.y += vit.y;
+    
+    // CONDITIONS DE PERIODICITE SI LA PARTICULE SORT DE L'ECRAN
+    if(pos.x >= width) { pos.x = 0; }
+    else if(pos.x <= 0) { pos.x = width; }
+    if(pos.y >= height) { pos.y = 0; }
+    else if(pos.y < 0) { pos.y = height; }
+    //println(pos.x);
+  }
+  
+  // POUR AFFICHER LA PARTICULE
+  void show() {
+    strokeWeight(10);
+    point(pos.x, pos.y);
+  }
+  
+}
