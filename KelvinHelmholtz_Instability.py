@@ -170,7 +170,7 @@ def __main__():
         """Ustar = U + dt * (-GPx + LU - NLU)
         Vstar = V + dt * (-GPy + LV - NLV)"""
 
-        # Calculs de u* et v* (Schéma implicite pour les termes linéaires) (Problème : ne fonctionne pas)
+        # Calculs de u* et v* (Schéma implicite pour les termes linéaires)
         # On met tous les termes sous forme de vecteurs
         """GPx = toVector(GPx); GPy = toVector(GPy)
         LU = toVector(LU); LV = toVector(LV)
