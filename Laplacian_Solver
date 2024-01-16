@@ -1,0 +1,87 @@
+```import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
+from math import *
+
+def buildMatrix(Lx, Ly, Nx, Ny):
+    # DISCRETISATIONS UNIFORMES EN CARRES (PLUS SIMPLE)
+    dx = Lx / Nx
+    dy = Ly / Ny
+
+    # INITIALISATION SOLUTION
+    U = np.zeros(Nx * Ny)
+
+    # CONSTRUCTIONS MATRICES POUR SYSTEME LINEAIRE
+    A = np.zeros((Nx * Ny, Nx * Ny))
+
+    # MATRICES INTERNES
+    At = (- 2/dx**2 - 2/dy**2) * np.eye(Nx) + (1/dx**2) * np.eye(Nx, k = 1) + (1/dx**2) * np.eye(Nx, k = -1)
+    At[0, -1] = 1/dx**2 # 1ERES CONDITIONS DE PERIODICITE (SUR X ICI)
+    At[-1, 0] = 1/dx**2
+
+    It = (1/dy**2)*np.eye(Nx)
+
+    # INDICES DES BLOCS
+    BN = [int(i*(Nx)) for i in range(0, Ny + 1)]
+
+    # CONSTRUCTION DE A BLOCS PAR BLOCS (BOUCLES SUR LES LIGNES DE BLOCS)
+    for i in range(0, Ny):
+        # MATRICES AU MILIEU
+        A[BN[i]:BN[i+1], BN[i]:BN[i+1]] = At # MATRICE At AU MILIEU
+        # MATRICES SUR LES "SOUS DIAG" DE BLOCS
+        if i == 0: A[BN[i+1]:BN[i+2], BN[i]:BN[i+1]] = It
+        elif i == Ny-1: A[BN[i-1]:BN[i], BN[i]:BN[i+1]] = It
+        else:
+            A[BN[i+1]:BN[i+2], BN[i]:BN[i+1]] = It
+            A[BN[i-1]:BN[i], BN[i]:BN[i+1]] = It
+
+    A[BN[-2]:BN[-1], 0:Nx] = It # 2EMES CONDITIONS DE PERIODICITE (SUR Y ICI)
+    A[0:Nx, BN[-2]:BN[-1]] = It
+
+    return A
+
+# RESOLUTION DE POISSON lap(U) = f AVEC f UNE MATRICE DE VALEURS (CONNUES) ET CONDITIONS AUX BORDS PERIODIQUES
+def ResolP(Lx, Ly, Nx, Ny, f):
+
+    # MATRICE DU LAPLACIEN
+    A = buildMatrix(Lx, Ly, Nx, Ny)
+
+    # POUR GARANTIR L'UNICTE DE LA SOLUTION NUMERIQUE
+    A[0, :] = 0 * A[0, :]
+    A[0, 0] = 1
+
+    # SECOND MEMBRE DU SYSTEME LINEAIRE
+    B = np.zeros(Nx * Ny)
+    for i in range(0, Nx):
+        for j in range(0, Ny):
+            B[j*Nx + i] = f[i, j]
+    B[0] = 0
+
+    # RESOLUTION SYSTEME LINEAIRE
+    U = np.linalg.solve(A, B)
+    U = np.reshape(U, (Ny, Nx))
+    U = np.transpose(U)
+
+    return U #X, Y
+
+# TESTS
+"""N = 30; M = 30
+xmin, ymin = 0, 0
+xmax, ymax = 1, 1
+
+def f(x, y):
+    return np.cos(2*np.pi*x + 2*np.pi*y)*np.sin(2*np.pi*x + 2*np.pi*y)#x*np.exp(y) - y*np.exp(x)#x*sin(5*np.pi*y) + np.exp(-((x-0.5)**2+(y-0.5)**2)/0.02)
+
+# SOLUTION
+X, Y, U = ResolP(xmin, xmax, ymin, ymax, N, M, f)
+gX, gY = np.meshgrid(X, Y)
+
+# GRAPHE SOLUTION
+ax = plt.axes(projection='3d')
+ax.plot_surface(gX, gY, U, cmap = cm.coolwarm, linewidth=0, antialiased=True)
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+ax.set_title("U")
+
+plt.show()"""
+```
